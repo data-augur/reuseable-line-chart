@@ -1,7 +1,48 @@
-import update from './update.js';
+import { select } from "d3";
+import { scatterPlot } from "./scatterplot";
+const csvUrl = [
+  "https://gist.githubusercontent.com/",
+  "curran/", //User
+  "a08a1080b88344b0c8a7", //Id of Gist
+  "/raw/0e7a9b0a5d22642a06d3d5b9bcbad9890c8ee534", //commit
+  "/iris.csv", //file Name
+].join("");
 
-// even though Rollup is bundling all your files together, errors and
-// logs will still point to your original source modules
-console.log('if you have sourcemaps enabled in your devtools, click on main.js:5 -->');
+const parseRow = (d) => {
+  d.sepal_length = +d.sepal_length;
+  d.petal_width = +d.petal_width;
+  d.petal_length = +d.petal_length;
+  d.sepal_width = +d.sepal_width;
+  return d;
+};
 
-update();
+const width = window.innerWidth;
+const height = window.innerHeight;
+
+const svg = select("body")
+  .append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+const xValue = (d) => d.petal_length;
+const yValue = (d) => d.sepal_length;
+
+const margin = {
+  top: 30,
+  bottom: 50,
+  left: 50,
+  right: 20,
+};
+const radius = 5;
+
+scatterPlot(
+  csvUrl,
+  parseRow,
+  xValue,
+  yValue,
+  radius,
+  margin,
+  width,
+  height,
+  svg
+);
