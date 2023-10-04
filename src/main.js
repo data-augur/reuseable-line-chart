@@ -1,5 +1,5 @@
-import { select } from "d3";
-import { scatterPlot } from "./scatterplot";
+import { select, csv } from "d3";
+import { scatterPlot } from "./scatter-plot";
 const csvUrl = [
   "https://gist.githubusercontent.com/",
   "curran/", //User
@@ -35,14 +35,18 @@ const margin = {
 };
 const radius = 5;
 
-scatterPlot(
-  csvUrl,
-  parseRow,
-  xValue,
-  yValue,
-  radius,
-  margin,
-  width,
-  height,
-  svg
-);
+const main = async () => {
+  //const data = await csv(csvUrl, parseRow);
+  svg.call(
+    scatterPlot()
+      .width(width)
+      .height(height)
+      .xValue(xValue)
+      .yValue(yValue)
+      .radius(radius)
+      .margin(margin)
+      .data(await csv(csvUrl, parseRow))
+  );
+};
+
+main();
