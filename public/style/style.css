@@ -5,3 +5,12 @@ body {
 .tick text {
   font-size: 24px;
 }
+.menu-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+}
