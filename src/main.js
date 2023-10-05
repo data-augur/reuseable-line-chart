@@ -37,16 +37,31 @@ const radius = 5;
 
 const main = async () => {
   //const data = await csv(csvUrl, parseRow);
-  svg.call(
-    scatterPlot()
-      .width(width)
-      .height(height)
-      .xValue(xValue)
-      .yValue(yValue)
-      .radius(radius)
-      .margin(margin)
-      .data(await csv(csvUrl, parseRow))
-  );
+  const plot = scatterPlot()
+    .width(width)
+    .height(height)
+    .xValue(xValue)
+    .yValue(yValue)
+    .radius(radius)
+    .margin(margin)
+    .data(await csv(csvUrl, parseRow));
+
+  // svg.call(plot);
+  const columns = [
+    "sepal_length",
+    "sepal_width",
+    "petal_length",
+    "petal_width",
+  ];
+  let index = 0;
+  setInterval(() => {
+    index++;
+    index = index % columns.length;
+    const column = columns[index];
+    console.log(column);
+    plot.xValue((d) => d[column]);
+    svg.call(plot);
+  }, 3000);
 };
 
 main();
