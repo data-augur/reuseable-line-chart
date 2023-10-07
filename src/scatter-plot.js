@@ -1,22 +1,49 @@
-import { scaleLinear, extent, axisLeft, axisBottom, transition } from "d3";
+import {
+  scaleLinear,
+  scalePoint,
+  extent,
+  axisLeft,
+  axisBottom,
+  transition,
+} from "d3";
 
 export const scatterPlot = () => {
   let width;
   let height;
   let data;
   let xValue;
+  let xType;
   let yValue;
+  let yType;
   let radius;
   let margin;
 
   const my = (selection) => {
-    const x = scaleLinear()
-      .domain(extent(data, xValue))
-      .range([margin.left, width - margin.right]);
+    let x;
+    if (xType === "catagorical") {
+      console.log("catagorical found");
+      x = scalePoint()
+        .domain(data.map(xValue))
+        .range([margin.left, width - margin.right])
+        .padding(0.2);
+    } else {
+      x = scaleLinear()
+        .domain(extent(data, xValue))
+        .range([margin.left, width - margin.right]);
+    }
 
-    const y = scaleLinear()
-      .domain(extent(data, yValue))
-      .range([height - margin.bottom, margin.top]);
+    let y;
+    if (yType === "catagorical") {
+      console.log("catagorical found");
+      y = scalePoint()
+        .domain(data.map(yValue))
+        .range([height - margin.bottom, margin.top])
+        .padding(0.2);
+    } else {
+      y = scaleLinear()
+        .domain(extent(data, yValue))
+        .range([height - margin.bottom, margin.top]);
+    }
 
     const marks = data.map((d) => ({
       x: x(xValue(d)),
@@ -88,6 +115,14 @@ export const scatterPlot = () => {
 
   my.yValue = function (_) {
     return arguments.length ? ((yValue = _), my) : yValue;
+  };
+
+  my.xType = function (_) {
+    return arguments.length ? ((xType = _), my) : xType;
+  };
+
+  my.yType = function (_) {
+    return arguments.length ? ((yType = _), my) : yType;
   };
 
   my.margin = function (_) {

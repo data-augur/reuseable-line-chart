@@ -46,11 +46,26 @@ const radius = 5;
 
 const main = async () => {
   //const data = await csv(csvUrl, parseRow);
+  const options = [
+    { value: "sepal_length", text: "Sapal Length", type: "quantitative" },
+    { value: "sepal_width", text: "Sapal Width", type: "quantitative" },
+    { value: "petal_length", text: "Patal Length", type: "quantitative" },
+    { value: "petal_width", text: "Patal Width", type: "quantitative" },
+    { value: "species", text: "Species", type: "catagorical" },
+  ];
+  const optionsByValue = new Map(
+    options.map((option) => [option.value, option])
+  );
+
+  console.log("type: ", optionsByValue.get("species").type);
+
   const plot = scatterPlot()
     .width(width)
     .height(height)
     .xValue(xValue)
     .yValue(yValue)
+    .xType("quantitative")
+    .yType("quantitative")
     .radius(radius)
     .margin(margin)
     .data(await csv(csvUrl, parseRow));
@@ -62,12 +77,7 @@ const main = async () => {
     "petal_length",
     "petal_width",
   ];
-  const options = [
-    { value: "sepal_length", text: "Sapal Length" },
-    { value: "sepal_width", text: "Sapal Width" },
-    { value: "petal_length", text: "Patal Length" },
-    { value: "petal_width", text: "Patal Width" },
-  ];
+
   let index = 0;
   xMenu.call(
     menu()
@@ -76,6 +86,7 @@ const main = async () => {
       .options(options)
       .on("change", (value) => {
         plot.xValue((d) => d[value]);
+        plot.xType(optionsByValue.get(value).type);
         svg.call(plot);
       })
   );
@@ -86,6 +97,7 @@ const main = async () => {
       .options(options)
       .on("change", (value) => {
         plot.yValue((d) => d[value]);
+        plot.yType(optionsByValue.get(value).type);
         svg.call(plot);
       })
   );
