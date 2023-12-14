@@ -1,5 +1,5 @@
-import { select, csv } from "d3";
-import { scatterPlot } from "./scatter-plot";
+import { select, csv, json, isoParse } from "d3";
+import { linePlot } from "./line-plot";
 import { menu } from "./menu.js";
 const csvUrl = [
   "https://gist.githubusercontent.com/",
@@ -10,10 +10,9 @@ const csvUrl = [
 ].join("");
 
 const parseRow = (d) => {
-  d.sepal_length = +d.sepal_length;
-  d.petal_width = +d.petal_width;
-  d.petal_length = +d.petal_length;
-  d.sepal_width = +d.sepal_width;
+  d.date = isoParse(d.date);
+  d.closingPriceNorm = s.closingPriceNorm * 100;
+  d.adjPriceNorm = s.adjPriceNorm * 100;
   return d;
 };
 
@@ -33,8 +32,8 @@ const xMenu = menuContainer.append("div");
 
 const yMenu = menuContainer.append("div");
 
-const xValue = (d) => d.sepal_length;
-const yValue = (d) => d.sepal_length;
+const xValue = (d) => isoParse(d.date);
+const yValue = (d) => d.closingPrice;
 
 const margin = {
   top: 30,
@@ -46,29 +45,34 @@ const radius = 5;
 
 const main = async () => {
   //const data = await csv(csvUrl, parseRow);
+  const data1 = await json(
+    "http://localhost:3000/dayend/adjClose/HUBC",
+    parseRow
+  );
+  console.log("data1: ", data1);
+
   const options = [
-    { value: "sepal_length", text: "Sapal Length", type: "quantitative" },
-    { value: "sepal_width", text: "Sapal Width", type: "quantitative" },
-    { value: "petal_length", text: "Patal Length", type: "quantitative" },
-    { value: "petal_width", text: "Patal Width", type: "quantitative" },
-    { value: "species", text: "Species", type: "catagorical" },
+    { value: "closingPrice", text: "Closing Price", type: "quantitative" },
+    { value: "adjClose", text: "Adjusted Close", type: "quantitative" },
+    { value: "closingPriceNorm", text: "Price Returns", type: "quantitative" },
+    { value: "adjCloseNorm", text: "Total Returns", type: "quantitative" },
   ];
   const optionsByValue = new Map(
     options.map((option) => [option.value, option])
   );
 
-  console.log("type: ", optionsByValue.get("species").type);
+  //console.log("type: ", optionsByValue.get("species").type);
 
-  const plot = scatterPlot()
+  const plot = linePlot()
     .width(width)
     .height(height)
     .xValue(xValue)
     .yValue(yValue)
-    .xType("quantitative")
+    .xType("date")
     .yType("quantitative")
     .radius(radius)
     .margin(margin)
-    .data(await csv(csvUrl, parseRow));
+    .data(data1);
 
   // svg.call(plot);
   const columns = [
@@ -79,17 +83,17 @@ const main = async () => {
   ];
 
   let index = 0;
-  xMenu.call(
-    menu()
-      .id("x-menu")
-      .labelText("X: ")
-      .options(options)
-      .on("change", (value) => {
-        plot.xValue((d) => d[value]);
-        plot.xType(optionsByValue.get(value).type);
-        svg.call(plot);
-      })
-  );
+  // xMenu.call(
+  //   menu()
+  //     .id("x-menu")
+  //     .labelText("X: ")
+  //     .options(options)
+  //     .on("change", (value) => {
+  //       plot.xValue((d) => d[value]);
+  //       plot.xType(optionsByValue.get(value).type);
+  //       svg.call(plot);
+  //     })
+  // );
   yMenu.call(
     menu()
       .id("y-menu")

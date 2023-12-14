@@ -5,9 +5,13 @@ import {
   axisLeft,
   axisBottom,
   transition,
+  timeFormat,
+  curveMonotoneX,
+  scaleUtc,
+  line,
 } from "d3";
 
-export const scatterPlot = () => {
+export const linePlot = () => {
   let width;
   let height;
   let data;
@@ -26,6 +30,10 @@ export const scatterPlot = () => {
         .domain(data.map(xValue))
         .range([margin.left, width - margin.right])
         .padding(0.2);
+    } else if (xType === "date") {
+      x = scaleUtc()
+        .domain(extent(data, xValue))
+        .range([margin.left, width - margin.right]);
     } else {
       x = scaleLinear()
         .domain(extent(data, xValue))
@@ -51,31 +59,44 @@ export const scatterPlot = () => {
     }));
     const t = transition().duration(1000);
 
-    const postionCircles = (circles) => {
-      circles.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-    };
+    const Pline = line()
+      .x((d) => d.x)
+      .y((d) => d.y)
+      .curve(curveMonotoneX);
 
-    console.log(marks);
     selection
-      .selectAll("circle")
-      .data(marks)
+      .selectAll("path")
+      .data([null])
       .join(
         (enter) =>
           enter
-            .append("circle")
-            .call(postionCircles)
-            .attr("r", 0)
-            .call((enter) => {
-              enter.transition(t).attr("r", radius);
-            }),
+            .append("path")
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr("d", Pline(marks)),
         (update) =>
           update.call((update) =>
             update
               .transition(t)
               .delay((d, i) => i * 5)
-              .call(postionCircles)
+              .attr("d", Pline(marks))
           ),
         (exit) => exit.remove()
+      );
+
+    selection
+      .selectAll("g.x-axis")
+      .data([null])
+      .join("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .transition(t)
+      .call(
+        axisBottom(x)
+          .ticks(width / 80)
+          .tickSizeOuter(0)
+          .tickFormat(timeFormat("%b %Y"))
       );
 
     selection
@@ -85,16 +106,7 @@ export const scatterPlot = () => {
       .attr("class", "y-axis")
       .attr("transform", `translate(${margin.left},0)`)
       .transition(t)
-      .call(axisLeft(y));
-
-    selection
-      .selectAll("g.x-axis")
-      .data([null])
-      .join("g")
-      .attr("class", "x-axis")
-      .attr("transform", `translate(0,${height - margin.bottom})`)
-      .transition(t)
-      .call(axisBottom(x));
+      .call(axisLeft(y).ticks(height / 40));
   };
 
   my.width = function (_) {
